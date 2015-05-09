@@ -3,11 +3,9 @@ package sag
 import scala.actors.Actor
 import scala.actors._
 import scala.collection.mutable.ListBuffer
-
+//import scala.collection.generic.GenericCompanion
 
 case object Hello
-
-
 
 /* 
  * Klasa Mastera - glownego agenta
@@ -16,8 +14,6 @@ case object Hello
 class Master(robots: ListBuffer[Robot]) extends Actor
 {
 	var startCheck : Int = 0
-
-
 			def act()
 {
 	for (r <- robots) 
