@@ -7,13 +7,31 @@ class Canvas (shelves_in: List[Shelf]) extends Panel {
  // val x=3
 //  val w=9+4*x //width
   val h=20
+  
+  //lenght/width of a tile
   var a=(size.getHeight()*0.05).toInt
+  
+  //radius for drawing robots
+  //var a_r=(size.getHeight()*0.05*0.75).toInt
+   var a_r=a
   
   
   var centerColor = Color.yellow
 
   var shelves=shelves_in
-  //var robots
+ 
+  def resizeParams(){
+   var temp=0.0
+   if(size.getWidth()>size.getHeight())
+     temp=size.getHeight()
+   else
+     temp=size.getWidth()
+   a= (temp*0.05).toInt
+   //a_r=(temp*0.05*0.5).toInt
+   a_r=a
+   repaint()
+  }
+  
   override def paintComponent(g: Graphics2D) { 
     // Start by erasing this Canvas
     g.clearRect(0, 0, size.width, size.height)
@@ -42,7 +60,17 @@ class Canvas (shelves_in: List[Shelf]) extends Panel {
       g.fillRect(shelf.x*a, shelf.y*a, a, a)
       g.setColor(Color.BLACK)
       g.drawRect(shelf.x*a, shelf.y*a, a, a)
-    }
+    }  
+    
+    //x and y are the coordinates of the upper left corner of a rectangle on which the ellipse is being drawn
+    if(Warehouse.agentList!=null) {
+      for (robot <- Warehouse.agentList){
+        var x=((robot.x+robot.xp)*a).toInt
+        var y=((robot.y+robot.yp)*a).toInt
+        g.setColor(Color.RED)
+        g.fillOval(x, y, a_r, a_r)
+     }
+   }
   }
     
   def setTheSize(x: Int, y: Int){

@@ -55,23 +55,54 @@ class Shelf(val xc: Int, val yc: Int) {
    }
 }
 
+class Tile(indexX_in: Int, indexY_in:Int){
+  val indexX=indexX_in
+  val indexY=indexY_in
+  var free= true
+}
+
+//moze zrobic tu liste zawierajaca tylko wolne kwadraty?
+object Map0{
+  var tiles=new ListBuffer[Tile]()
+  
+  def getFreeTile(): Tile={
+    for (tile <- tiles)
+      if (tile.free)
+        return tile
+    return null
+  }
+}
+
+object Map {
+  //var freeTiles = new ListBuffer[Tile]()
+  var freeTiles = new ListBuffer[Tile]()
+  
+  def popFreeTile(): Tile={
+    var tile=freeTiles.head
+    freeTiles-=tile
+    return tile  
+  }
+}
 object Warehouse {
   var agentsNum:Int=0
   var agentList = new ListBuffer[Robot]()
   var master:Master=null
   var shelves=List[Shelf]()
   var items=new ListBuffer[Item]()
-  
-  //initialize shelves
+  val robotsVelocity = 0.1 //each time a robot moves, increment its position by 10% of the size of the tile
+ 
+  //initialize shelves and map
   private var indexX=0
   private var indexY=0
   private var lineTemp=""
   for(line <- Source.fromFile("layoutB.txt").getLines()){
      indexX=0 
      for (nr <- line){
+       Map.freeTiles+= new Tile(indexX, indexY)
        if(nr=='1')
          shelves=shelves :+ new Shelf(indexX, indexY)          
-         indexX+=1          
+       indexX+=1 
+     
      }      
      indexY+=1
      lineTemp=line
@@ -108,6 +139,7 @@ object Warehouse {
    def initMaster(){
      master=new Master(agentList)
      master.start()
+     master.placeRobots()
    }
   
 }

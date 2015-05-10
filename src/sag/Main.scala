@@ -61,9 +61,9 @@ object main extends SimpleSwingApplication {
               
       val lblItems=new Label{
         text="Items:"
-        horizontalAlignment=Alignment.Left  
-        xAlignment=Alignment.Left
-        preferredSize.width=300
+     //   horizontalAlignment=Alignment.Left  
+     //   xAlignment=Alignment.Left
+      //  preferredSize.width=300
         
         }
       val txtItems=new TextArea{
@@ -145,6 +145,7 @@ object main extends SimpleSwingApplication {
             //start agent logic
             Warehouse.initAgents()
             Warehouse.initMaster()
+            canvas.repaint()
             
           }
           
@@ -158,12 +159,8 @@ object main extends SimpleSwingApplication {
           txtItemNum.text=""
           
         case UIElementResized(_) => 
-          var a1=(canvas.size.getWidth()*0.05).toInt
-          var a2=(canvas.size.getHeight()*0.05).toInt
-          if(a1>a2)
-            canvas.a=a2
-          else
-            canvas.a=a1
+          canvas.resizeParams()
+          
          
       }
     }
