@@ -14,6 +14,9 @@ case object Hello
 class Master(robots: ListBuffer[Robot]) extends Actor {
   var startCheck : Int = 0
   
+  // lista(?) z odleglosciami robotow od produktu
+  
+  
   def act() {
     for (r <- robots)	{
       r ! Hello 
@@ -51,5 +54,20 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
        var freeTile=Map.popFreeTile()
        r.placeOn(freeTile)
      }
+  }
+  
+  def checkProductStatusFromList()
+  {
+    for (i <- Warehouse.items)
+    {
+      //println(i.getStatus())
+      if(i.getStatus() == "Awaiting pickup")
+      {
+        println(i.ID)
+        //for (r <- robots) r ! PickProductId
+        for (r <- robots) r ! i
+      }
+      
+    }
   }
 }

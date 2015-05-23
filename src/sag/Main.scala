@@ -20,10 +20,10 @@ import javax.swing.SwingConstants
 
 
 
-object main extends SimpleSwingApplication {
+object main extends SimpleSwingApplication{
   
   //logic
-  var exit = false
+  //var exit = false
   var inputAgents=0
   val AgentList = new ListBuffer[Robot]()
 
@@ -154,7 +154,10 @@ object main extends SimpleSwingApplication {
           var item=Warehouse.getItem(txtItemNum.text)
           if(item!=null)
             if(item.status==Status.InStore)
-              item.changeStatus(Status.AwaitingPickup)           
+            {
+              item.changeStatus(Status.AwaitingPickup)
+              Warehouse.master.checkProductStatusFromList()
+            }
           refreshItemList()
           txtItemNum.text=""
           

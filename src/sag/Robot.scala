@@ -59,9 +59,12 @@ class Robot(id_in: Int, info: String) extends Actor
   /*
    * Metoda oblicza dystans miedzy aktualnym polozeniem robota a celem
    */
-  def calculateDistance(produktID : Int) : Double =		{
-    val x = 1.0
-    return x
+  def calculateDistance(product : Item) : Double =  {
+    var s : Shelf = product.getShelf()
+    //var xS = s.getX()
+    println(product.getStatus())
+    return 0
+
   }
   
   def act() {
@@ -76,6 +79,14 @@ class Robot(id_in: Int, info: String) extends Actor
         case prods : ListBuffer[_] =>		{
           for (p <- prods) println(p)
         }
+        case item : Item => {
+          println("aa")
+          // wywolac funkcje zwracajaca dystans do tego produktu i odeslac do mastera
+          var dist = calculateDistance(item)
+          println("Robot " + id + " " + dist)
+          sender ! dist
+        }
+        
       }
     }
   }
