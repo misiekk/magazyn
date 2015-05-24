@@ -33,6 +33,13 @@ object main extends SimpleSwingApplication{
     this.peer.setLocationRelativeTo(null)
     this.peer.setPreferredSize(new Dimension(800,600))
     
+    // refresh every 250ms
+    val timer=new javax.swing.Timer(250, Swing.ActionListener(e =>
+    { 
+        repaint()
+    }))
+    timer.start()
+    
     // declare Components here
     val canvas=new Canvas(Warehouse.shelves)
     canvas.setTheSize(Warehouse.x_len_param, Warehouse.y_len_param)
@@ -157,6 +164,12 @@ object main extends SimpleSwingApplication{
             {
               item.changeStatus(Status.AwaitingPickup)
               Warehouse.master.checkProductStatusFromList()
+              /*for (s <- Warehouse.shelves)
+              {
+                var suma = s.x + s.y
+                println(s.x + " " + s.y + " " + suma)
+              }*/
+                            
             }
           refreshItemList()
           txtItemNum.text=""

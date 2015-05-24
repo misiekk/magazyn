@@ -14,6 +14,9 @@ case object Hello
 class Master(robots: ListBuffer[Robot]) extends Actor {
   var startCheck : Int = 0
   
+  // cel, do ktorego ma dojechac item; moze niekoniecznie przechowywac to w masterze
+  val goalX : Int = 10
+  val goalY : Int = 10
   // lista(?) z odleglosciami robotow od produktu
   
   
@@ -56,6 +59,11 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
      }
   }
   
+  /*
+   * dla wszystkich wczytanych itemow 
+   * znajdz ten ktory oczekuje na podjecie
+   * i wyslij wszystkim robotom uchwyt do niego
+   * */
   def checkProductStatusFromList()
   {
     for (i <- Warehouse.items)
@@ -66,7 +74,9 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
         println(i.ID)
         //for (r <- robots) r ! PickProductId
         for (r <- robots) r ! i
-      }
+        i.changeStatus(Status.Analysed)
+
+       }
       
     }
   }

@@ -2,6 +2,7 @@ package sag
 import scala.actors.Actor
 import scala.actors._
 import scala.collection.mutable.ListBuffer
+import scala.math
 
 
 case object Ready
@@ -18,8 +19,8 @@ class Robot(id_in: Int, info: String) extends Actor
   // Stan baterii [%]
   var batteryLevel : Int = 100
   // Polozenie robota na mapie
-  var x = 0
-  var y = 0
+  var x : Double = 0
+  var y : Double = 0
   
   //polozenie - ulamek przebytego kwadratu na mapie
   var xp=0.0
@@ -50,21 +51,79 @@ class Robot(id_in: Int, info: String) extends Actor
      tile.free=false
   }
   
-  def move(){
-    xp+=xp*dx*Warehouse.robotsVelocity
-    yp+=yp*dy*Warehouse.robotsVelocity
-    //TODO: check which tile is gonna be neccessary and if it is free. change the tiles' status from busy to free or the other way around
-    
+  def moveUp()
+  {
+    dy = -1
+    dx = 0
   }
+  def moveDown()
+  {
+    dy = 1
+    dx = 0
+  }
+  def moveLeft()
+  {
+    dy = 0
+    dx = -1
+  }
+  def moveRight()
+  {
+    dy = 0
+    dx = 1
+  }
+  
   /*
-   * Metoda oblicza dystans miedzy aktualnym polozeniem robota a celem
+   * poprawka we wzorach na xp, yp
+   * dodanie waunkow na zerowanie przyrostow i zmiane polozenia robota
+   * */
+  def move(){
+    xp+=dx*Warehouse.robotsVelocity
+    yp+=dy*Warehouse.robotsVelocity
+    //TODO: check which tile is gonna be neccessary and if it is free. change the tiles' status from busy to free or the other way around
+    x += xp
+    y += yp
+    
+    if (xp == 1.0) 
+      {
+        //x += 1;
+        xp = 0;
+      }
+    if (xp == -1.0) 
+      {
+        //x -= 1;
+        xp = 0;
+      }
+    if (yp == 1.0) 
+      {
+        //y += 1;
+        yp = 0;
+      }
+    if (yp == 1.0) 
+      {
+        //y -=1;
+        yp = 0;
+      }
+    //println(this.id + " " + xp + " " + yp)
+  }
+  
+  /*
+   * Metoda oblicza dystans (ilosc krokow) miedzy aktualnym polozeniem robota a polka z itemem
    */
-  def calculateDistance(product : Item) : Double =  {
-    var s : Shelf = product.getShelf()
-    //var xS = s.getX()
-    println(product.getStatus())
-    return 0
-
+  def calculateDistance(product : Item) : Int =  {
+    val s : Shelf = product.getShelf()
+    if (!s.isInstanceOf[Shelf]) 
+      println("Error shelf")
+    // wspolrzedne polki z itemem
+    var xS : Int = s.getX()
+    var yS : Int = s.getY()
+    
+    // dystans miedzy robotem a polka liczony w liczbie krokow
+    var krokiX : Int = scala.math.abs(1-2)
+    var krokiY : Int = scala.math.abs(1-2)
+    
+    
+    //println(product.getStatus())
+    return krokiX + krokiY
   }
   
   def act() {
@@ -79,14 +138,26 @@ class Robot(id_in: Int, info: String) extends Actor
         case prods : ListBuffer[_] =>		{
           for (p <- prods) println(p)
         }
-        case item : Item => {
-          println("aa")
-          // wywolac funkcje zwracajaca dystans do tego produktu i odeslac do mastera
-          var dist = calculateDistance(item)
-          println("Robot " + id + " " + dist)
-          sender ! dist
-        }
         
+        /*
+         * item do odebrania
+         * oblicz dystans do polki, na ktorej jest item
+         * i odeslij masterowi odleglosc
+         * TODO: robot odbiera tylko jesli nie jest zajety lub ma wysoki poziom baterii
+         * */
+        
+        case item : Item => {
+          if(status){
+            //println(item.getStatus())
+            // wywolac funkcje zwracajaca dystans do tego produktu i odeslac do mastera
+            var dist : Double = calculateDistance(item)
+            //println(item.getShelf().getX())
+            //println("Robot " + id + ": " + dist)
+            sender ! dist
+            move()
+            //println("Robot " + id + ": " + x + " " + y)
+          }
+        }        
       }
     }
   }
