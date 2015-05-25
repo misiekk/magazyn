@@ -114,6 +114,7 @@ def popFreeTile(): Tile={
 			return null
 		}
 }
+
 }
 object Warehouse {
 var agentsNum:Int=0

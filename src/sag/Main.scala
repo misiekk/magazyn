@@ -33,8 +33,8 @@ object main extends SimpleSwingApplication{
     this.peer.setLocationRelativeTo(null)
     this.peer.setPreferredSize(new Dimension(800,600))
     
-    // refresh every 250ms
-    val timer=new javax.swing.Timer(250, Swing.ActionListener(e =>
+    // refresh every 40ms
+    val timer=new javax.swing.Timer(40, Swing.ActionListener(e =>
     { 
         repaint()
     }))
