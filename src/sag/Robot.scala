@@ -92,6 +92,14 @@ class Robot(id_in: Int, info: String) extends Actor {
     //println("x, y = " + x + ", " + y)
     xp = 0.0
     yp = 0.0
+    
+    // TODO
+    // sprawdz w ktorej komorce jest robot i ustaw odpowiednia flage zajetosci
+    // podczas ruchu robota zajmuje on zawsze 2 komorki
+    
+    
+    
+    
     //println("x, y = " + x + ", " + y)
     /*
     if (xp == 1.0) {
@@ -144,6 +152,17 @@ class Robot(id_in: Int, info: String) extends Actor {
     yGoal = item.getShelf().getY()
     println("CEL: (" + xGoal + ", " + yGoal+ ")")
   }
+  
+  // Metoda ustawia flage zajetosci dla komorki
+  def setTileOccupied(tile: Tile) : Boolean =
+  {
+    if(tile.free)
+    {
+      tile.free = false
+      return true
+    }
+    return false
+  }
 
   /*
    * Metoda sprawdza czy prawy kwadrat od robota jest wolny
@@ -152,15 +171,19 @@ class Robot(id_in: Int, info: String) extends Actor {
   {
     // sprawdzic czy w Map.freetiles jest kafelek x+1 i czy jest wolny
     // uwaga na wartosci skrajne mapy
-    breakable
-    {
-      for (t <- Map.freeTiles)
+    for (t <- Map.freeTiles)
       {
+      // jesli komorka wolna
         if(tileX1 + 1 == t.indexX && tileY1 == t.indexY && t.free)
-          break
+        {
+          // jesli nie zajeta (podwojne sprawdzenie) to zmien status na zajeta
+          if(setTileOccupied(t))
+            return true
+          else
+            return false
+        }          
       }
-    }
-    return true
+    return false
   }
   /*
    * Metoda sprawdza czy lewy kwadrat od robota jest wolny
@@ -208,18 +231,18 @@ class Robot(id_in: Int, info: String) extends Actor {
           moveRight()
           return true
         }
-        else if (xGoal < x) {
+        else if (xGoal < x && checkLeftTile()) {
           moveLeft()
           return true
         }
       }
       else if (yGoal != y)
       {
-        if (yGoal > y) {
+        if (yGoal > y && checkBottomTile()) {
           moveDown()
           return true
         }
-        else if (yGoal < y) {
+        else if (yGoal < y && checkTopTile()) {
           moveUp()
           return true
         }
