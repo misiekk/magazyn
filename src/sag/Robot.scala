@@ -231,16 +231,15 @@ class Robot(id_in: Int, info: String) extends Actor {
             //println("33333")
             return true
           }
-          // jesli juz zajelismy w pierwszym ifie to tam zmierzamy (mechanizm anty-samoblokujacy)
-          else if(tileX2 == t.indexX && tileY2 == t.indexY)
+          else
+            return false
+        }
+        // jesli juz zajelismy w pierwszym ifie to tam zmierzamy (mechanizm anty-samoblokujacy)
+        if(tileX2 == t.indexX && tileY2 == t.indexY)
         {
           //println(tileX2 + " " + tileY2)
           return true
         }
-          else
-            return false
-        }
-        
       }
     return false
     //return true
