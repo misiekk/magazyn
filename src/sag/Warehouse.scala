@@ -99,6 +99,7 @@ def getFreeTile(): Tile={
 object Map {
 //var freeTiles = new ListBuffer[Tile]()
 var freeTiles = new ListBuffer[Tile]()
+var allTiles = new ListBuffer[Tile]()
 
 // A jesli freeTiles jest puste to sie program wywali
 def popFreeTile(): Tile={
@@ -128,11 +129,13 @@ val robotsVelocity = 0.1 //each time a robot moves, increment its position by 10
 private var indexX=0
 private var indexY=0
 private var lineTemp=""
-for(line <- Source.fromFile("layoutB.txt").getLines()){
+for(line <- Source.fromFile("layoutB.txt").getLines())
+{
 	indexX=0 
 			for (nr <- line){    
 				//if(nr == '0') // add element to freeTiles if it's not a shelf
 				Map.freeTiles+= new Tile(indexX, indexY)
+        Map.allTiles+= new Tile(indexX, indexY)
 				if(nr=='1')  
 					shelves=shelves :+ new Shelf(indexX, indexY)          
 				indexX+=1 
@@ -141,6 +144,8 @@ for(line <- Source.fromFile("layoutB.txt").getLines()){
 	indexY+=1
 			lineTemp=line
 }
+
+
 //println ("indexXY = " + indexX + ", " + indexY)
 
 val x_len_param=lineTemp.length()
@@ -158,7 +163,7 @@ for(item <- items){
 		for (shelf <- shelves){
 			if (item.putOnShelf(shelf)) 
       {
-        println("(" + shelf.getX() + ", " + shelf.getY() +") _" + item.ID+ "_")
+        //println("(" + shelf.getX() + ", " + shelf.getY() +") _" + item.ID+ "_")
         break  
       }
 			

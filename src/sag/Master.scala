@@ -1,6 +1,7 @@
 package sag
 
 import scala.actors.Actor
+import scala.util.control.Breaks._
 import scala.actors._
 import scala.collection.mutable.ListBuffer
 //import scala.collection.generic.GenericCompanion
@@ -52,10 +53,29 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
     for (r <- robots) r ! prods
    }
   
+  // Metoda ktora uaktualnia stan w allTiles
+ def findTile(t : Tile)
+ {
+   breakable
+   {
+   for (x <- Map.allTiles)
+   {
+     if(x.indexX == t.indexX && x.indexY == t.indexY)
+       {
+       x.free = false
+       println("Success")
+       break
+       }
+
+   }
+   }
+ }
+  
   def placeRobots(){
      for (r <- robots)  {
        var freeTile=Map.popFreeTile()
        r.placeOn(freeTile)
+       findTile(freeTile)
      }
   }
   
