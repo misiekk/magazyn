@@ -80,6 +80,8 @@ class Tile(indexX_in: Int, indexY_in:Int){
 	val indexX=indexX_in
 	val indexY=indexY_in
 	var free= true
+  // okresla ktory robot zajal komorke; wykorzystywane w algorytmie jazdy robotow
+  var robotId : Int = 0
 }
 
 //moze zrobic tu liste zawierajaca tylko wolne kwadraty?
