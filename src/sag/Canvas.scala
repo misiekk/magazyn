@@ -61,14 +61,27 @@ class Canvas (shelves_in: List[Shelf]) extends Panel {
       g.setColor(Color.BLACK)
       g.drawRect(shelf.x*a, shelf.y*a, a, a)
     }  
+    for(t <- Map.allTiles)
+    {
+      if(!t.free)
+      {
+        g.setColor(Color.WHITE)
+        g.fillRect(t.indexX*a, t.indexY*a, a, a)
+      }
+    }
     
     //x and y are the coordinates of the upper left corner of a rectangle on which the ellipse is being drawn
     if(Warehouse.agentList!=null) {
+      var licznik = 0
       for (robot <- Warehouse.agentList){
-        var x=((robot.x+robot.xp)*a).toInt
-        var y=((robot.y+robot.yp)*a).toInt
-        g.setColor(Color.RED)
+        var x=((robot.x)*a).toInt
+        var y=((robot.y)*a).toInt
+        if(licznik == 0)
+          g.setColor(Color.RED)
+        else
+          g.setColor(Color.GREEN)
         g.fillOval(x, y, a_r, a_r)
+        licznik += 1
      }
    }
   }
