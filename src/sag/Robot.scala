@@ -136,7 +136,7 @@ class Robot(id_in: Int, info: String) extends Actor {
     xp = 0
     yp = 0
     
-    println("(R" + id + ") x, y = " + x + ", " + y)
+    //println("(R" + id + ") x, y = " + x + ", " + y)
     //xp = 0.0
     //yp = 0.0
     //printOccupiedTiles()
@@ -228,8 +228,8 @@ class Robot(id_in: Int, info: String) extends Actor {
       //{
       for (t <- Map.allTiles)
       {
-        if(tileX2 == t.indexX && tileY2 == t.indexY)
-          t.free =false
+        /*if(tileX2 == t.indexX && tileY2 == t.indexY)
+          t.free =false*/
         if(tileX1 == t.indexX && tileY1 == t.indexY)
         {
           this.synchronized
@@ -288,6 +288,7 @@ class Robot(id_in: Int, info: String) extends Actor {
         // jesli juz zajelismy w pierwszym ifie to tam zmierzamy (mechanizm anty-samoblokujacy)
         if(tileX2 == t.indexX && tileY2 == t.indexY && !t.free && t.robotId == id && goingRight)
         {
+          //updateTile1()
           //println(tileX2 + " " + tileY2)
           return true
         }
@@ -299,10 +300,12 @@ class Robot(id_in: Int, info: String) extends Actor {
    */
   def checkLeftTile() : Boolean =
   {
+    
     for (t <- Map.allTiles)
       {
-        if((tileX1 - 1 == t.indexX && tileY1 == t.indexY && t.free))
+        if((tileX1 - 1 == t.indexX && tileY1 == t.indexY && t.free)) 
         {
+          println("check left tile")
           if(setTileOccupied(t))
           {
             tileX2 = t.indexX
@@ -315,6 +318,7 @@ class Robot(id_in: Int, info: String) extends Actor {
         }
         if(tileX2 == t.indexX && tileY2 == t.indexY && !t.free && t.robotId == id && goingLeft)
         {
+          //updateTile1()
           return true
         }
       }
@@ -342,6 +346,7 @@ class Robot(id_in: Int, info: String) extends Actor {
 
         if(tileX2 == t.indexX && tileY2 == t.indexY && !t.free && t.robotId == id && goingUp)
         {
+          //updateTile1()
 
           return true
         }
@@ -369,6 +374,7 @@ class Robot(id_in: Int, info: String) extends Actor {
         }
         if(tileX2 == t.indexX && tileY2 == t.indexY && !t.free && t.robotId == id && goingDown)
         {
+          //updateTile1()
           return true
         }
       }
@@ -380,6 +386,15 @@ class Robot(id_in: Int, info: String) extends Actor {
     xMove = 0
     yMove = 0
     counter = 0
+  }
+  
+  def updateTile1()
+  {
+    if (x == tileX2 && y == tileY2)
+    {
+      tileX1 = tileX2
+      tileY1 = tileY2
+    }
   }
   
   /*
@@ -399,46 +414,70 @@ class Robot(id_in: Int, info: String) extends Actor {
 
     }
     // zmiana kierunku dopiero po osiagnieciu pelnej komorki tile2
-    //if (x == tileX2 && y == tileY2)
-    //{
+    /*if(!checkIfReachedSecondTile())
+      return true;
+    else
+    {*/
       if (xGoal != x)// && (xMove == 1.0 || firstTime))
       {
+        //updateTile1()
+        //println(id + " po x")
         setXpYpToZero()
         
-        if (xGoal > x && checkRightTile()) {
+        if (xGoal > x) {
           //if(id == 1) println("ahoj")
-          moveRight()
+          
           firstTime = false
           if(checkIfReachedSecondTile())
             tileX2 += 1
+          if(checkRightTile())
+          {
+          moveRight()
             
           //println("Tx1 = " + tileX1 + " Tx2 = " + tileX2)
           return true
+          }
         }
-        if (xGoal < x && checkLeftTile()) {
-          moveLeft()
+        if (xGoal < x) {
+          //println("w lewo")
+          
           firstTime = false
           if(checkIfReachedSecondTile())
             tileX2 -= 1
-          return true
+          if(checkLeftTile()) 
+          {
+            moveLeft()
+            return true
+          }
         }
       }
       if (yGoal != y)// && (yMove == 1.0 || firstTime))
       {
+        //updateTile1()
         setXpYpToZero()
-        if (yGoal > y && checkBottomTile()) {
-          moveDown()
+        if (yGoal > y) {
+          
           firstTime = false
           if(checkIfReachedSecondTile())
             tileY2 += 1
+            
+          if(checkBottomTile())
+          {
+          moveDown()
           return true
+          }
         }
-        if (yGoal < y && checkTopTile()) {
-          moveUp()
+        if (yGoal < y) {
+          
           firstTime = false
           if(checkIfReachedSecondTile())
             tileY2 -= 1
+          
+          if(checkTopTile())
+          {
+          moveUp()
           return true
+          }
         }
       }
     //}
@@ -502,7 +541,7 @@ class Robot(id_in: Int, info: String) extends Actor {
             setGoalCords(item)
             //while (x != xGoal || y != yGoal) 
             
-            println("Robot " + id + ": " + x + " " + y)
+            println("Robot " + id + ": " + x + " " + y + " T1: " + tileX1 + " " + tileY1 + " T2: " + tileX2 + " " + tileY2)
 
             while(!isGoalReached())
             {
@@ -510,14 +549,15 @@ class Robot(id_in: Int, info: String) extends Actor {
               //{
                 if(setDirection() )
                 {
-                  
                   //println("Driving home for christmas...")
+                  //updateTile1();
                   move()
+                  
                 }
               //}
               Thread.sleep(40)
             }
-            println("za whilem")
+            println("R" + id + " za whilem")
             
             // zwolnij T1
             breakable
@@ -526,13 +566,14 @@ class Robot(id_in: Int, info: String) extends Actor {
             {
               if(tileX1 == t.indexX && tileY1 == t.indexY)
               {
-                t.free = true
-                t.robotId = 0
+                
                 println("Robot " + id + ": " +  "Ostatnio zwolniona: " + t.indexX + " " + t.indexY)
                 if(tileX2 != -1 || tileY2 != -1)
                 {
                 tileX1 = tileX2
                 tileY1 = tileY2
+                t.free = true
+                t.robotId = 0
                 }
                 tileX2 = -1
                 tileY2 = -1
