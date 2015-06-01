@@ -7,19 +7,19 @@ import scala.collection.mutable.ListBuffer
 //import scala.collection.generic.GenericCompanion
 
 case object Hello
-
+case object Lol
 /* 
  * Klasa Mastera - glownego agenta
  * @robots - wszystkie podlegle agenty
  */
 class Master(robots: ListBuffer[Robot]) extends Actor {
   var startCheck : Int = 0
-  
+  var n = 1
   // cel, do ktorego ma dojechac item; moze niekoniecznie przechowywac to w masterze
   val goalX : Int = 10
   val goalY : Int = 10
-  // lista(?) z odleglosciami robotow od produktu
-  
+  // lista z odleglosciami robotow od produktu (prodId, robotId, distance)
+  var distanceList = new ListBuffer[(String, Int, Int)]()
   
   def act() {
     for (r <- robots)	{
@@ -34,10 +34,49 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
             startCheck += 1
             //println ("Good")
            }
+        
       }
+    }
+    loop
+    {
+    receive
+    {
+      case infoDistance : (String, Int, Int) =>
+          {
+            
+            println("odbieram")
+            distanceList += infoDistance
+            if(distanceList.size == n*robots.size)
+            {
+              //for(x <- distanceList)
+                //println(x._1 + " " + x._2 + " " + x._3)
+               
+                findMinAmountOfSteps(infoDistance._1)
+                n += 1
+            }
+            
+          }
+    }
     }
     //exit();
     println("Utworzonych agentow: " + startCheck)
+  }
+  
+  def findMinAmountOfSteps(prodId : String) : (Int, Int) =
+  {
+      var temp = new ListBuffer[(Int, Int)]()
+      for(el <- distanceList)
+      {
+        if(el._1 == prodId)
+        {
+          var x = (el._2, el._3)
+          temp += x
+        }
+      }
+      // (robotId, distance)
+      var min: (Int, Int) = temp.min(Ordering.by((s : (Int, Int)) => s._2 ))
+      return min
+      //println("MINIMUM = Robot " + min._1 + " Dist = " + min._2)
   }
   def getProductsId()
   {

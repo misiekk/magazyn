@@ -182,15 +182,16 @@ def getItem(ID: String): Item={
 }
 
 def initAgents(){
+  master=new Master(agentList)
 	for(x <- 1 to agentsNum)
-		agentList += new Robot(x, "Robot " + x)
+		agentList += new Robot(x, master)
   for(agent <- agentList)
     agent.start()
 
 }
 
-def initMaster(){
-	master=new Master(agentList)
+  def initMaster() {
+	
 	master.start()
 	master.placeRobots()
 }

@@ -10,7 +10,7 @@ case object Ready
 /* 
  * Klasa Robota - agenta podrzednego
  */
-class Robot(id_in: Int, info: String) extends Actor {
+class Robot(id_in: Int, master: Master) extends Actor {
   val id = id_in
   // true - wszystko ok; false - bateria rozladowana, jedz do stacji dokujacej
   var status: Boolean = true
@@ -182,11 +182,12 @@ class Robot(id_in: Int, info: String) extends Actor {
     // TODO 
     // dystans miedzy robotem a polka liczony w liczbie krokow
     // jakis problem z wyborem typu mialem, brakowalo koncepcji 
-    var krokiX: Int = scala.math.abs(1 - 2)
-    var krokiY: Int = scala.math.abs(1 - 2)
-
-    //println(product.getStatus())
-    return krokiX + krokiY
+    var krokiX: Int = scala.math.abs(tileX1 - xS)
+    var krokiY: Int = scala.math.abs(tileY1 - yS)
+    var suma = krokiX + krokiY
+    println("Robot " + id + " (kroki): " + suma)
+    
+    return suma
   }
 
   /*
@@ -507,6 +508,7 @@ class Robot(id_in: Int, info: String) extends Actor {
     return false
   }
   
+
   
   def act() {
     while (true) {
@@ -529,21 +531,18 @@ class Robot(id_in: Int, info: String) extends Actor {
          * */
         case item: Item => {
           if (status) {
-            //println(item.getStatus())
-            // wywolac funkcje zwracajaca dystans do tego produktu i odeslac do mastera
-            var dist: Double = calculateDistance(item)
-            //println(item.getShelf().getX())
-            //println("Robot " + id + ": " + dist)
+            // liczymy odleglosc do item'a
+            var dist: Int = calculateDistance(item)
+            val infoDistance = (item.ID, id, dist)
+            //println(infoDistance._1 + " " + infoDistance._2)
+            master ! infoDistance
+            //master ! Lol
 
-            sender ! dist
-
-            // funkcja pobierajaca wspolrzedne celu
-            setGoalCords(item)
-            //while (x != xGoal || y != yGoal) 
+            //setGoalCords(item)
             
-            println("Robot " + id + ": " + x + " " + y + " T1: " + tileX1 + " " + tileY1 + " T2: " + tileX2 + " " + tileY2)
+            //println("Robot " + id + ": " + x + " " + y + " T1: " + tileX1 + " " + tileY1 + " T2: " + tileX2 + " " + tileY2)
 
-            while(!isGoalReached())
+            /*while(!isGoalReached())
             {
               //if(isNextHopReached)
               //{
@@ -556,7 +555,7 @@ class Robot(id_in: Int, info: String) extends Actor {
                 }
               //}
               Thread.sleep(40)
-            }
+            }*/
             println("R" + id + " za whilem")
             
             // zwolnij T1

@@ -150,8 +150,10 @@ object main extends SimpleSwingApplication{
             txtStats.append("Number of robots is: " + txtAgentsNum.text)
             txtAgentsNum.text=""       
             //start agent logic
+            
             Warehouse.initAgents()
             Warehouse.initMaster()
+            
             canvas.repaint()
             
           }
