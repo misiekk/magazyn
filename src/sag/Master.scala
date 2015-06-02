@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 //import scala.collection.generic.GenericCompanion
 
 case object Hello
-case object Lol
+case object Assign
 /* 
  * Klasa Mastera - glownego agenta
  * @robots - wszystkie podlegle agenty
@@ -15,9 +15,10 @@ case object Lol
 class Master(robots: ListBuffer[Robot]) extends Actor {
   var startCheck : Int = 0
   var n = 1
-  // cel, do ktorego ma dojechac item; moze niekoniecznie przechowywac to w masterze
-  val goalX : Int = 10
-  val goalY : Int = 10
+  
+  // wspolrzedne do ktorych robot z itemem ma dojechac
+  val warehouseGoalX = 10
+  val warehouseGoalY = 10
   // lista z odleglosciami robotow od produktu (prodId, robotId, distance)
   var distanceList = new ListBuffer[(String, Int, Int)]()
   
@@ -32,9 +33,7 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
         case Ready =>
           {
             startCheck += 1
-            //println ("Good")
-           }
-        
+          }
       }
     }
     loop
@@ -43,18 +42,22 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
     {
       case infoDistance : (String, Int, Int) =>
           {
-            
-            println("odbieram")
+            //println("odbieram")
             distanceList += infoDistance
+            // TODO warunek do dupy
             if(distanceList.size == n*robots.size)
-            {
-              //for(x <- distanceList)
-                //println(x._1 + " " + x._2 + " " + x._3)
-               
-                findMinAmountOfSteps(infoDistance._1)
+            {             
+                var result = findMinAmountOfSteps(infoDistance._1)
                 n += 1
+                for(r<-robots)
+                {
+                  // dla robota z najmniejsza iloscia krokow
+                  // przypisz produkt i rozpocznij misje
+                  if(r.id == result._1)
+                    r ! (infoDistance._1)
+                }
+                  
             }
-            
           }
     }
     }
@@ -75,8 +78,9 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
       }
       // (robotId, distance)
       var min: (Int, Int) = temp.min(Ordering.by((s : (Int, Int)) => s._2 ))
+      println("MINIMUM = Robot " + min._1 + " Dist = " + min._2)
       return min
-      //println("MINIMUM = Robot " + min._1 + " Dist = " + min._2)
+      
   }
   def getProductsId()
   {

@@ -185,7 +185,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
     var krokiX: Int = scala.math.abs(tileX1 - xS)
     var krokiY: Int = scala.math.abs(tileY1 - yS)
     var suma = krokiX + krokiY
-    println("Robot " + id + " (kroki): " + suma)
+    //println("Robot " + id + " (kroki): " + suma)
     
     return suma
   }
@@ -194,10 +194,15 @@ class Robot(id_in: Int, master: Master) extends Actor {
    * Metoda wywolywana jesli robot dostanie zadanie; ustawia wspolrzedne celu
    * */
   def setGoalCords(item: Item) {
-    xGoal = item.getShelf().getX()
-    yGoal = item.getShelf().getY()
-    println("CEL: (" + xGoal + ", " + yGoal+ ")")
-  }
+    if(item.isInstanceOf[Item])
+    {
+      xGoal = item.getShelf().getX()
+      yGoal = item.getShelf().getY()
+      println("CEL: (" + xGoal + ", " + yGoal+ ")")
+    }
+    else
+      println("ERROR WHILE SETTING GOAL CORDS!")
+ }
   
   // Metoda ustawia flage zajetosci dla komorki
   def setTileOccupied(tile: Tile) : Boolean =
@@ -508,8 +513,61 @@ class Robot(id_in: Int, master: Master) extends Actor {
     return false
   }
   
+def findItemFromString(name : String) : Item = 
+{
+  for(i <- Warehouse.items)
+  {
+    if (i.ID == name)
+      return i
+  }
+  return null
+}
 
+def setGoalToMan()
+{
+   xGoal = master.warehouseGoalX
+   yGoal = master.warehouseGoalY
+}
   
+def go()
+{
+  while(!isGoalReached())
+    {
+        if(setDirection() )
+        {
+          //println("Driving home for christmas...")
+          move()
+        }
+      Thread.sleep(40)
+    }
+    println("R" + id + " za whilem")
+    
+    // zwolnij T1
+    breakable
+    {
+    for (t <- Map.allTiles)
+    {
+      if(tileX1 == t.indexX && tileY1 == t.indexY)
+      {
+        
+        //println("Robot " + id + ": " +  "Ostatnio zwolniona: " + t.indexX + " " + t.indexY)
+        if(tileX2 != -1 || tileY2 != -1)
+        {
+        tileX1 = tileX2
+        tileY1 = tileY2
+        t.free = true
+        t.robotId = 0
+        }
+        tileX2 = -1
+        tileY2 = -1
+        
+        
+        //println("Robot " + id + ": " +  "ostatnie T1 = " + tileX1 + " " + tileY1)
+        break
+      }
+    }
+    }  
+}
   def act() {
     while (true) {
       receive {
@@ -536,55 +594,26 @@ class Robot(id_in: Int, master: Master) extends Actor {
             val infoDistance = (item.ID, id, dist)
             //println(infoDistance._1 + " " + infoDistance._2)
             master ! infoDistance
-            //master ! Lol
-
-            //setGoalCords(item)
-            
-            //println("Robot " + id + ": " + x + " " + y + " T1: " + tileX1 + " " + tileY1 + " T2: " + tileX2 + " " + tileY2)
-
-            /*while(!isGoalReached())
-            {
-              //if(isNextHopReached)
-              //{
-                if(setDirection() )
-                {
-                  //println("Driving home for christmas...")
-                  //updateTile1();
-                  move()
-                  
-                }
-              //}
-              Thread.sleep(40)
-            }*/
-            println("R" + id + " za whilem")
-            
-            // zwolnij T1
-            breakable
-            {
-            for (t <- Map.allTiles)
-            {
-              if(tileX1 == t.indexX && tileY1 == t.indexY)
-              {
-                
-                println("Robot " + id + ": " +  "Ostatnio zwolniona: " + t.indexX + " " + t.indexY)
-                if(tileX2 != -1 || tileY2 != -1)
-                {
-                tileX1 = tileX2
-                tileY1 = tileY2
-                t.free = true
-                t.robotId = 0
-                }
-                tileX2 = -1
-                tileY2 = -1
-                
-                
-                println("Robot " + id + ": " +  "ostatnie T1 = " + tileX1 + " " + tileY1)
-                break
-              }
-            }
-            }
+     
+            //
           }
         }
+        
+        case startMission : String =>
+          {
+            println("Assign robot: " + id + " for product: " + startMission)
+            setGoalCords(findItemFromString(startMission))
+            
+            //println("Robot " + id + ": " + x + " " + y + " T1: " + tileX1 + " " + tileY1 + " T2: " + tileX2 + " " + tileY2)
+            go()
+            
+            
+            // po dotarciu do celu poczekaj chwile, zmien cel na magazyniera i jedz do niego
+            Thread.sleep(1000)
+            setGoalToMan()
+            go()
+
+          }
       }
     }
   }
