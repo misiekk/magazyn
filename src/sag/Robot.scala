@@ -5,14 +5,17 @@ import scala.collection.mutable.ListBuffer
 import scala.math
 import scala.util._
 import scala.util.control.Breaks._
+
 case object Ready
+case object Busy
+case object Refuse
 
 /* 
  * Klasa Robota - agenta podrzednego
  */
 class Robot(id_in: Int, master: Master) extends Actor {
   val id = id_in
-  // true - wszystko ok; false - bateria rozladowana, jedz do stacji dokujacej
+  // true - wszystko ok; false - bateria rozladowana, jedz do stacji dokujacej lub podczas misji
   var status: Boolean = true
 
   var goingUp, goingDown, goingLeft, goingRight : Boolean = false
@@ -185,7 +188,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
     var krokiX: Int = scala.math.abs(tileX1 - xS)
     var krokiY: Int = scala.math.abs(tileY1 - yS)
     var suma = krokiX + krokiY
-    //println("Robot " + id + " (kroki): " + suma)
+    println("Robot " + id + " (kroki): " + suma)
     
     return suma
   }
@@ -311,7 +314,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
       {
         if((tileX1 - 1 == t.indexX && tileY1 == t.indexY && t.free)) 
         {
-          println("check left tile")
+          //println("check left tile")
           if(setTileOccupied(t))
           {
             tileX2 = t.indexX
@@ -531,6 +534,10 @@ def setGoalToMan()
   
 def go()
 {
+  // jezeli robot jest zablokowany, tzn nie rusza sie przez okreslona ilosc krokow, to wysyla info
+  var steps : Int = 0
+  //breakable
+  //{
   while(!isGoalReached())
     {
         if(setDirection() )
@@ -538,13 +545,26 @@ def go()
           //println("Driving home for christmas...")
           move()
         }
+        // jesli nie mozemy sie ruszyc, zwiekszamy licznik pustych krokow
+        else
+          steps += 1
+          
       Thread.sleep(40)
+      if (steps == 20)
+      {
+        println("ZABLOKOWANY ROBOT " + id)
+        //break
+      }
+      
     }
+  //}
     println("R" + id + " za whilem")
     
+    /*if(steps<20)
+    {
     // zwolnij T1
     breakable
-    {
+    {*/
     for (t <- Map.allTiles)
     {
       if(tileX1 == t.indexX && tileY1 == t.indexY)
@@ -563,11 +583,12 @@ def go()
         
         
         //println("Robot " + id + ": " +  "ostatnie T1 = " + tileX1 + " " + tileY1)
-        break
+        
       }
     }
-    }  
-}
+    }
+   // }
+
   def act() {
     while (true) {
       receive {
@@ -597,11 +618,16 @@ def go()
      
             //
           }
+          else
+            master ! Refuse
         }
         
         case startMission : String =>
           {
             println("Assign robot: " + id + " for product: " + startMission)
+            // zmiana statusu na zajety
+            status = false
+            master ! Busy
             setGoalCords(findItemFromString(startMission))
             
             //println("Robot " + id + ": " + x + " " + y + " T1: " + tileX1 + " " + tileY1 + " T2: " + tileX2 + " " + tileY2)
@@ -612,6 +638,11 @@ def go()
             Thread.sleep(1000)
             setGoalToMan()
             go()
+            // po dojechaniu do magazyniera poczekaj chwile
+            Thread.sleep(1000)
+            // nastepnie odjedz zeby inne roboty mogly ukonczyc misje i zmien status na 'wolny'
+            status = true
+            master ! Ready
 
           }
       }

@@ -15,7 +15,8 @@ case object Assign
 class Master(robots: ListBuffer[Robot]) extends Actor {
   var startCheck : Int = 0
   var n = 1
-  
+  var robotsNotAssigned : Int = 0
+  println("SIZE = " + robots.size)
   // wspolrzedne do ktorych robot z itemem ma dojechac
   val warehouseGoalX = 10
   val warehouseGoalY = 10
@@ -36,30 +37,63 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
           }
       }
     }
+    robotsNotAssigned = robots.size
+    println("Not Assigned: " + robotsNotAssigned)
     loop
     {
     receive
     {
       case infoDistance : (String, Int, Int) =>
           {
-            //println("odbieram")
+            println("odbieram")
             distanceList += infoDistance
-            // TODO warunek do dupy
-            if(distanceList.size == n*robots.size)
+            if(distanceList.size == robotsNotAssigned)
             {             
+              println("DistList size = " + distanceList.size + ", Not Assigned " + n*robotsNotAssigned)
                 var result = findMinAmountOfSteps(infoDistance._1)
-                n += 1
+                //n += 1
+                breakable
+                {
                 for(r<-robots)
                 {
                   // dla robota z najmniejsza iloscia krokow
                   // przypisz produkt i rozpocznij misje
                   if(r.id == result._1)
+                  {
                     r ! (infoDistance._1)
+                    break
+                  }
                 }
+                }
+                distanceList.clear()
+                println(distanceList.size)
+                
                   
             }
           }
+      case Ready => 
+        {
+          if(robotsNotAssigned < robots.size)
+            robotsNotAssigned += 1
+          else
+          println("Problem z licznikiem assigned Ready")
+          println("ready again " + robotsNotAssigned)
+        }
+      case Busy =>
+        {
+          if(robotsNotAssigned > 0)
+            robotsNotAssigned -= 1
+          else
+            println("Problem z licznikiem assigned Busy")
+          println("busy " + robotsNotAssigned)
+        }
+      case Refuse =>
+        {
+          // nic nie rob
+        }
     }
+    
+    
     }
     //exit();
     println("Utworzonych agentow: " + startCheck)
@@ -136,7 +170,11 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
       {
         println(i.ID)
         //for (r <- robots) r ! PickProductId
-        for (r <- robots) r ! i
+        for (r <- robots) 
+          {
+          if(r.status)
+            r ! i
+          }
         i.changeStatus(Status.Analysed)
 
        }
