@@ -119,11 +119,18 @@ def popFreeTile(): Tile={
 }
 
 }
+
+class Charger(val x: Int, val y: Int)
+{
+  var free : Boolean = true
+  
+}
 object Warehouse {
 var agentsNum:Int=0
 var agentList = new ListBuffer[Robot]()
 var master:Master=null
 var shelves=List[Shelf]()
+var charges = List[Charger]()
 var items=new ListBuffer[Item]()
 val robotsVelocity = 0.1 //each time a robot moves, increment its position by 10% of the size of the tile
 
@@ -139,7 +146,10 @@ for(line <- Source.fromFile("layoutB.txt").getLines())
 				Map.freeTiles+= new Tile(indexX, indexY)
         Map.allTiles+= new Tile(indexX, indexY)
 				if(nr=='1')  
-					shelves=shelves :+ new Shelf(indexX, indexY)          
+					shelves=shelves :+ new Shelf(indexX, indexY)   
+        else if(nr=='2')  
+          charges=charges :+ new Charger(indexX, indexY)   
+        
 				indexX+=1 
 
 			}      

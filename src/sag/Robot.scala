@@ -531,6 +531,14 @@ def setGoalToMan()
    xGoal = master.warehouseGoalX
    yGoal = master.warehouseGoalY
 }
+
+def checkBatteryLevel() : Boolean = 
+{
+  if(this.batteryLevel > 25)
+    return true
+  else
+    return false
+}
   
 def go()
 {
@@ -544,6 +552,7 @@ def go()
         {
           //println("Driving home for christmas...")
           move()
+          this.batteryLevel -= 3
         }
         // jesli nie mozemy sie ruszyc, zwiekszamy licznik pustych krokow
         else

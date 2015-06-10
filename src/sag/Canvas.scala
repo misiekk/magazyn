@@ -61,6 +61,13 @@ class Canvas (shelves_in: List[Shelf]) extends Panel {
       g.setColor(Color.BLACK)
       g.drawRect(shelf.x*a, shelf.y*a, a, a)
     }  
+    for(ch <- Warehouse.charges)
+    {
+      g.setColor(Color.GREEN)
+      g.fillRect(ch.x*a, ch.y*a, a, a)
+      g.setColor(Color.BLACK)
+      g.drawRect(ch.x*a, ch.y*a, a, a)
+    }
     
     // komorki zajete na bialo
     for(t <- Map.allTiles)
