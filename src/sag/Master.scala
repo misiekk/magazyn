@@ -8,6 +8,7 @@ import scala.collection.mutable.ListBuffer
 
 case object Hello
 case object Assign
+case object ItemStatusChanged
 /* 
  * Klasa Mastera - glownego agenta
  * @robots - wszystkie podlegle agenty
@@ -45,7 +46,7 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
     {
       case infoDistance : (String, Int, Int) =>
           {
-            println("odbieram")
+            //println("odbieram")
             distanceList += infoDistance
             if(distanceList.size == robotsNotAssigned)
             {             
@@ -66,7 +67,7 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
                 }
                 }
                 distanceList.clear()
-                println(distanceList.size)
+                //println(distanceList.size)
                 
                   
             }
@@ -90,6 +91,10 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
       case Refuse =>
         {
           // nic nie rob
+        }
+      case ItemStatusChanged =>
+        {
+          // wyslij zadanie odswiezenia listy statusow itemow
         }
     }
     

@@ -21,7 +21,7 @@ import javax.swing.SwingConstants
 
 
 object main extends SimpleSwingApplication{
-  
+  var isItemChanged : Boolean = false
   //logic
   //var exit = false
   var inputAgents=0
@@ -37,6 +37,12 @@ object main extends SimpleSwingApplication{
     val timer=new javax.swing.Timer(40, Swing.ActionListener(e =>
     { 
         repaint()
+        /*if(isItemChanged)
+        {
+          ui.refreshItemList()
+          isItemChanged = false
+        }*/
+        
     }))
     timer.start()
     

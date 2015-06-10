@@ -33,9 +33,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
   //polozenie - ulamek przebytego kwadratu na mapie
   var xp = 0.0
   var yp = 0.0
-  
-  var xMove = 0.0
-  var yMove = 0.0
+
   var firstTime = true
   /*
    * kierunki ruchu robota
@@ -122,8 +120,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
    * poprawka we wzorach na xp, yp
    * */
   def move() {
-    xMove = dx * Warehouse.robotsVelocity
-    yMove = dy * Warehouse.robotsVelocity
+
     xp += dx * Warehouse.robotsVelocity
     yp += dy * Warehouse.robotsVelocity
 
@@ -133,9 +130,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
     // ucinanie dupnych czesci ulamkowych
     x = BigDecimal(x).setScale(1, BigDecimal.RoundingMode.HALF_UP).toDouble
     y = BigDecimal(y).setScale(1, BigDecimal.RoundingMode.HALF_UP).toDouble
-    
-    xMove = BigDecimal(xMove).setScale(1, BigDecimal.RoundingMode.HALF_UP).toDouble
-    yMove = BigDecimal(yMove).setScale(1, BigDecimal.RoundingMode.HALF_UP).toDouble
+
     xp = 0
     yp = 0
     
@@ -390,12 +385,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
     return false
   }
   
-  def setXpYpToZero()
-  {
-    xMove = 0
-    yMove = 0
-    counter = 0
-  }
+
   
   def updateTile1()
   {
@@ -427,12 +417,15 @@ class Robot(id_in: Int, master: Master) extends Actor {
       return true;
     else
     {*/
+    
+    
       if (xGoal != x)// && (xMove == 1.0 || firstTime))
       {
         //updateTile1()
         //println(id + " po x")
-        setXpYpToZero()
-        
+
+        this.synchronized
+        {
         if (xGoal > x) {
           //if(id == 1) println("ahoj")
           
@@ -459,11 +452,13 @@ class Robot(id_in: Int, master: Master) extends Actor {
             return true
           }
         }
+        }
       }
       if (yGoal != y)// && (yMove == 1.0 || firstTime))
       {
+        this.synchronized
+        {
         //updateTile1()
-        setXpYpToZero()
         if (yGoal > y) {
           
           firstTime = false
@@ -487,6 +482,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
           moveUp()
           return true
           }
+        }
         }
       }
     //}
@@ -518,10 +514,20 @@ class Robot(id_in: Int, master: Master) extends Actor {
   
 def findItemFromString(name : String) : Item = 
 {
+  // update statusu na awaiting pickup
+  
   for(i <- Warehouse.items)
   {
     if (i.ID == name)
+    {
+      //main.ui.refreshItemList()
+      
+      //i.changeStatus(Status.AwaitingPickup)
+      //master ! ItemStatusChanged
+      main.isItemChanged = true
+      
       return i
+    }
   }
   return null
 }
