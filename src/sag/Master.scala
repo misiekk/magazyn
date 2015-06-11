@@ -19,8 +19,8 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
   var robotsNotAssigned : Int = 0
   println("SIZE = " + robots.size)
   // wspolrzedne do ktorych robot z itemem ma dojechac
-  val warehouseGoalX = 10
-  val warehouseGoalY = 10
+  val warehouseGoalX = 13
+  val warehouseGoalY = 8
   // lista z odleglosciami robotow od produktu (prodId, robotId, distance)
   var distanceList = new ListBuffer[(String, Int, Int)]()
   

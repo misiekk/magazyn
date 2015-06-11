@@ -17,7 +17,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
   val id = id_in
   // true - wszystko ok; false - bateria rozladowana, jedz do stacji dokujacej lub podczas misji
   var status: Boolean = true
-
+  var goToCharger : Boolean = false
   var goingUp, goingDown, goingLeft, goingRight : Boolean = false
   // ile razy wywolalo move, tymczasowe lipne rozwiazanie
   var counter : Int = 0
@@ -552,8 +552,9 @@ def go()
   var steps : Int = 0
   //breakable
   //{
-  while(!isGoalReached())
+  while(!isGoalReached() || goToCharger)
     {
+        goToCharger = false
         if(setDirection() )
         {
           //println("Driving home for christmas...")
@@ -568,7 +569,15 @@ def go()
       if (steps == 20)
       {
         println("ZABLOKOWANY ROBOT " + id)
-        //break
+        // sprawdz czy jestes na chargerze
+        if(checkIfOnCharger())
+        {
+          // jesli tak to wyjdz z while'a i skoncz misje, blokujac chargera
+          goToCharger = true
+          
+        }
+        
+        
       }
       
     }
@@ -603,6 +612,55 @@ def go()
     }
     }
    // }
+def checkIfOnCharger() : Boolean = 
+{
+  for(c <- Warehouse.charges)
+  {
+    if(x == c.x && y == c.y)
+    {
+      c.free = false
+      return true
+    }
+  }
+ 
+  return false
+}
+
+def releaseCharger()
+{
+  this.synchronized
+  {
+  breakable
+  {
+  for(c <- Warehouse.charges)
+  {
+    if(x == c.x && y == c.y)
+    {
+      c.free = true
+      break
+    }
+  }
+  } 
+  }
+}
+
+def setGoalToCharger()
+{
+  this.synchronized
+  {
+  breakable
+  {
+    for(c <- Warehouse.charges)
+      if(c.free)
+      {
+        xGoal = c.x
+        yGoal = c.y
+        c.free = false
+        break
+      }
+  }
+  }
+}
 
   def act() {
     while (true) {
@@ -642,6 +700,7 @@ def go()
             println("Assign robot: " + id + " for product: " + startMission)
             // zmiana statusu na zajety
             status = false
+            releaseCharger()
             master ! Busy
             setGoalCords(findItemFromString(startMission))
             
@@ -658,6 +717,10 @@ def go()
             // nastepnie odjedz zeby inne roboty mogly ukonczyc misje i zmien status na 'wolny'
             status = true
             master ! Ready
+            // do stacji dok
+            setGoalToCharger()
+            go()
+            
 
           }
       }

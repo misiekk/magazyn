@@ -82,7 +82,7 @@ class Canvas (shelves_in: List[Shelf]) extends Panel {
     
     // cel - magazynier
     g.setColor(Color.BLUE)
-    g.fillRect(10*a, 10*a, a, a)
+    g.fillRect(13*a, 8*a, a, a)
     // ----
     
     //x and y are the coordinates of the upper left corner of a rectangle on which the ellipse is being drawn
