@@ -230,27 +230,28 @@ class Robot(id_in: Int, master: Master) extends Actor {
       // to znajdz pierwszego tile'a 
       //breakable
       //{
+      this.synchronized
+      {
       for (t <- Map.allTiles)
       {
         /*if(tileX2 == t.indexX && tileY2 == t.indexY)
           t.free =false*/
         if(tileX1 == t.indexX && tileY1 == t.indexY)
         {
-          this.synchronized
-          {
+          
           // zwolnij go
           t.free = true
           // i odswiez pozycje robota 
           tileX1 = tileX2
           tileY1 = tileY2
           t.robotId = 0
-          }
+          
           //println("Robot " + id + ": " + "Dojechalem do " + tileX2 + " " + tileY2)
           //println("Robot " + id + ": " +  t.indexX + " " + t.indexY + " zwolniona")
           return true
         }
       }
-      //}
+      }
     }
     return false
   }
@@ -424,8 +425,8 @@ class Robot(id_in: Int, master: Master) extends Actor {
         //updateTile1()
         //println(id + " po x")
 
-        this.synchronized
-        {
+        //this.synchronized
+        //{
         if (xGoal > x) {
           //if(id == 1) println("ahoj")
           
@@ -452,12 +453,12 @@ class Robot(id_in: Int, master: Master) extends Actor {
             return true
           }
         }
-        }
+        //}
       }
       if (yGoal != y)// && (yMove == 1.0 || firstTime))
       {
-        this.synchronized
-        {
+        //this.synchronized
+        //{
         //updateTile1()
         if (yGoal > y) {
           
@@ -483,7 +484,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
           return true
           }
         }
-        }
+        //}
       }
     //}
     //if(dirSet)
@@ -589,6 +590,8 @@ def go()
     // zwolnij T1
     breakable
     {*/
+    this.synchronized
+    {
     for (t <- Map.allTiles)
     {
       if(tileX1 == t.indexX && tileY1 == t.indexY)
@@ -611,6 +614,7 @@ def go()
       }
     }
     }
+    }
    // }
 def checkIfOnCharger() : Boolean = 
 {
@@ -628,8 +632,8 @@ def checkIfOnCharger() : Boolean =
 
 def releaseCharger()
 {
-  this.synchronized
-  {
+  //this.synchronized
+  //{
   breakable
   {
   for(c <- Warehouse.charges)
@@ -641,13 +645,13 @@ def releaseCharger()
     }
   }
   } 
-  }
+  //}
 }
 
 def setGoalToCharger()
 {
-  this.synchronized
-  {
+  //this.synchronized
+  //{
   breakable
   {
     for(c <- Warehouse.charges)
@@ -659,7 +663,7 @@ def setGoalToCharger()
         break
       }
   }
-  }
+  //}
 }
 
   def act() {
@@ -715,11 +719,12 @@ def setGoalToCharger()
             // po dojechaniu do magazyniera poczekaj chwile
             Thread.sleep(1000)
             // nastepnie odjedz zeby inne roboty mogly ukonczyc misje i zmien status na 'wolny'
-            status = true
-            master ! Ready
+            
             // do stacji dok
             setGoalToCharger()
             go()
+            status = true
+            master ! Ready
             
 
           }
