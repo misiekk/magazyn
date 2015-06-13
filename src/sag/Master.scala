@@ -5,7 +5,7 @@ import scala.util.control.Breaks._
 import scala.actors._
 import scala.collection.mutable.ListBuffer
 //import scala.collection.generic.GenericCompanion
-
+import scala.util._
 case object Hello
 case object Assign
 case object ItemStatusChanged
@@ -15,7 +15,8 @@ case object ItemStatusChanged
  */
 class Master(robots: ListBuffer[Robot]) extends Actor {
   var startCheck : Int = 0
-  var n = 1
+
+  
   var robotsNotAssigned : Int = 0
   println("SIZE = " + robots.size)
   // wspolrzedne do ktorych robot z itemem ma dojechac
@@ -24,6 +25,8 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
   // lista z odleglosciami robotow od produktu (prodId, robotId, distance)
   var distanceList = new ListBuffer[(String, Int, Int)]()
   
+  //
+  var itemsToPick = new ListBuffer[(Item)]()
   def act() {
     for (r <- robots)	{
       r ! Hello 
@@ -50,9 +53,10 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
             distanceList += infoDistance
             if(distanceList.size == robotsNotAssigned)
             {             
-              println("DistList size = " + distanceList.size + ", Not Assigned " + n*robotsNotAssigned)
+              println("DistList size = " + distanceList.size + ", Not Assigned " + robotsNotAssigned)
                 var result = findMinAmountOfSteps(infoDistance._1)
                 //n += 1
+                
                 breakable
                 {
                 for(r<-robots)
@@ -166,24 +170,32 @@ class Master(robots: ListBuffer[Robot]) extends Actor {
    * znajdz ten ktory oczekuje na podjecie
    * i wyslij wszystkim robotom uchwyt do niego
    * */
-  def checkProductStatusFromList()
+  def checkProductStatusFromList(item : Item)
   {
-    for (i <- Warehouse.items)
-    {
-      //println(i.getStatus())
-      if(i.getStatus() == "Awaiting pickup")
-      {
-        println(i.ID)
-        //for (r <- robots) r ! PickProductId
-        for (r <- robots) 
-          {
-          if(r.status)
-            r ! i
-          }
-        i.changeStatus(Status.Analysed)
+    var licznik : Int = 0
 
-       }
-      
+    //for (r <- robots) r ! PickProductId
+    for (r <- robots) 
+      {
+      // a jesli zaden nie jest wolny to zaden nie dostanie info
+      // jakis mechanizm powtarzajacy
+      if(r.status)
+      {
+        r ! item
+        item.changeStatus(Status.AwaitingPickup)
+        licznik += 1
+      }
+      }
+    // dodaj do listy awaiting pickup
+    if(licznik == 0)
+    {
+      itemsToPick += item
     }
+
+  }
+  
+  def sendItemToRobots()
+  {
+    
   }
 }

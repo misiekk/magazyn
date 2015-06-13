@@ -37,6 +37,7 @@ object main extends SimpleSwingApplication{
     val timer=new javax.swing.Timer(40, Swing.ActionListener(e =>
     { 
         repaint()
+        //ui.refreshItemList()
         /*if(isItemChanged)
         {
           ui.refreshItemList()
@@ -171,7 +172,7 @@ object main extends SimpleSwingApplication{
             if(item.status==Status.InStore)
             {
               item.changeStatus(Status.AwaitingPickup)
-              Warehouse.master.checkProductStatusFromList()
+              Warehouse.master.checkProductStatusFromList(item)
               /*for (s <- Warehouse.shelves)
               {
                 var suma = s.x + s.y

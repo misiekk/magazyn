@@ -53,7 +53,7 @@ def getStatus(): String={
 class Shelf(val xc: Int, val yc: Int) {
 	var x: Int = xc
 	var y: Int = yc
-	val maxItemsProShelf: Int =3
+	val maxItemsProShelf: Int =1
 	var items=new ListBuffer[Item]()
 
 	def receiveItem(item: Item): Boolean={

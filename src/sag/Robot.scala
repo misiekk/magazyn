@@ -5,7 +5,6 @@ import scala.collection.mutable.ListBuffer
 import scala.math
 import scala.util._
 import scala.util.control.Breaks._
-
 case object Ready
 case object Busy
 case object Refuse
@@ -29,7 +28,6 @@ class Robot(id_in: Int, master: Master) extends Actor {
   // Polozenie robota na mapie
   var x: Double = 0.0
   var y: Double = 0.0
-  
   //polozenie - ulamek przebytego kwadratu na mapie
   var xp = 0.0
   var yp = 0.0
@@ -103,6 +101,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
     goingDown = false
     goingLeft = false
     goingRight = false
+    //println("Reset DONE")
   }
 
   // do debugowania
@@ -245,7 +244,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
           tileX1 = tileX2
           tileY1 = tileY2
           t.robotId = 0
-          
+          resetDirections()
           //println("Robot " + id + ": " + "Dojechalem do " + tileX2 + " " + tileY2)
           //println("Robot " + id + ": " +  t.indexX + " " + t.indexY + " zwolniona")
           return true
@@ -264,15 +263,17 @@ class Robot(id_in: Int, master: Master) extends Actor {
     // sprawdzic czy w Map.allTiles jest kafelek x+1 i czy jest wolny
     // TODO: uwaga na wartosci skrajne mapy
     //println("prawa")
+    this.synchronized
+    {
     for (t <- Map.allTiles)
       {
       //println("22222")
       // jesli komorka wolna
-        if((tileX1 + 1 == t.indexX && tileY1 == t.indexY && t.free))
+        if((tileX1 + 1 == t.indexX && tileY1 == t.indexY && t.free && (!goingUp && !goingDown)))
         {
           //this.synchronized
           //{
-          //println("aaa")
+          println("check right tile")
           // jesli nie zajeta (podwojne sprawdzenie) to zmien status na zajeta
           if(setTileOccupied(t))
           {
@@ -287,7 +288,10 @@ class Robot(id_in: Int, master: Master) extends Actor {
             return true
           }
           else
+          {
+            println("ELSE")
             return false
+          }
           //}
         }
         // jesli juz zajelismy w pierwszym ifie to tam zmierzamy (mechanizm anty-samoblokujacy)
@@ -298,6 +302,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
           return true
         }
       }
+    }
     return false
   }
   /*
@@ -305,12 +310,13 @@ class Robot(id_in: Int, master: Master) extends Actor {
    */
   def checkLeftTile() : Boolean =
   {
-    
+    this.synchronized
+    {
     for (t <- Map.allTiles)
       {
-        if((tileX1 - 1 == t.indexX && tileY1 == t.indexY && t.free)) 
+        if((tileX1 - 1 == t.indexX && tileY1 == t.indexY && t.free && (!goingUp && !goingDown))) 
         {
-          //println("check left tile")
+          println("check left tile")
           if(setTileOccupied(t))
           {
             tileX2 = t.indexX
@@ -327,6 +333,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
           return true
         }
       }
+    }
     return false
   }
   /*
@@ -334,6 +341,8 @@ class Robot(id_in: Int, master: Master) extends Actor {
    */
   def checkTopTile() : Boolean =
   {
+    this.synchronized
+    {
     for (t <- Map.allTiles)
       {
         if((tileX1  == t.indexX && tileY1 - 1 == t.indexY && t.free))
@@ -356,6 +365,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
           return true
         }
       }
+    }
     return false
   }
   /*
@@ -363,6 +373,8 @@ class Robot(id_in: Int, master: Master) extends Actor {
    */
   def checkBottomTile() : Boolean =
   {
+    this.synchronized
+    {
     for (t <- Map.allTiles)
       {
         if((tileX1  == t.indexX && tileY1 + 1 == t.indexY && t.free))
@@ -383,6 +395,7 @@ class Robot(id_in: Int, master: Master) extends Actor {
           return true
         }
       }
+    }
     return false
   }
   
@@ -413,82 +426,78 @@ class Robot(id_in: Int, master: Master) extends Actor {
       return false
 
     }
-    // zmiana kierunku dopiero po osiagnieciu pelnej komorki tile2
-    /*if(!checkIfReachedSecondTile())
-      return true;
-    else
-    {*/
-    
-    
-      if (xGoal != x)// && (xMove == 1.0 || firstTime))
-      {
-        //updateTile1()
-        //println(id + " po x")
+    if (xGoal != x)// && (xMove == 1.0 || firstTime))
+    {
+      //updateTile1()
+      //println(id + " po x")
 
-        //this.synchronized
-        //{
-        if (xGoal > x) {
-          //if(id == 1) println("ahoj")
-          
-          firstTime = false
-          if(checkIfReachedSecondTile())
-            tileX2 += 1
-          if(checkRightTile())
-          {
-          moveRight()
-            
-          //println("Tx1 = " + tileX1 + " Tx2 = " + tileX2)
-          return true
-          }
-        }
-        if (xGoal < x) {
-          //println("w lewo")
-          
-          firstTime = false
-          if(checkIfReachedSecondTile())
-            tileX2 -= 1
-          if(checkLeftTile()) 
-          {
-            moveLeft()
-            return true
-          }
-        }
-        //}
-      }
-      if (yGoal != y)// && (yMove == 1.0 || firstTime))
+      this.synchronized
       {
-        //this.synchronized
-        //{
-        //updateTile1()
-        if (yGoal > y) {
-          
-          firstTime = false
-          if(checkIfReachedSecondTile())
-            tileY2 += 1
-            
-          if(checkBottomTile())
-          {
-          moveDown()
-          return true
-          }
+      if (xGoal > x) {
+        //if(id == 1) println("ahoj")
+        
+        firstTime = false
+        if(checkIfReachedSecondTile())
+        {
+          tileX2 += 1
+          println("Reached second pr")
         }
-        if (yGoal < y) {
+        if(checkRightTile())
+        {
+        moveRight()
           
-          firstTime = false
-          if(checkIfReachedSecondTile())
-            tileY2 -= 1
-          
-          if(checkTopTile())
-          {
-          moveUp()
-          return true
-          }
+        //println("Tx1 = " + tileX1 + " Tx2 = " + tileX2)
+        return true
         }
-        //}
       }
-    //}
-    //if(dirSet)
-     // return true
+      if (xGoal < x) {
+        //println("w lewo")
+        
+        firstTime = false
+        if(checkIfReachedSecondTile())
+        {
+          tileX2 -= 1
+          println("Reached second le")
+        }
+        if(checkLeftTile()) 
+        {
+          moveLeft()
+          return true
+        }
+      }
+      }
+    }
+    if (yGoal != y)// && (yMove == 1.0 || firstTime))
+    {
+      this.synchronized
+      {
+      //updateTile1()
+      if (yGoal > y) {
+        
+        firstTime = false
+        if(checkIfReachedSecondTile())
+          tileY2 += 1
+          
+        if(checkBottomTile())
+        {
+        moveDown()
+        return true
+        }
+      }
+      if (yGoal < y) {
+        
+        firstTime = false
+        if(checkIfReachedSecondTile())
+          tileY2 -= 1
+        
+        if(checkTopTile())
+        {
+        moveUp()
+        return true
+        }
+      }
+      }
+    }
 
     return false
   }
@@ -547,6 +556,16 @@ def checkBatteryLevel() : Boolean =
     return false
 }
   
+def monitorStatus() 
+{
+  if(batteryLevel < 25)
+  {
+    status = false
+    setGoalToCharger()
+    go()
+  }
+
+}
 def go()
 {
   // jezeli robot jest zablokowany, tzn nie rusza sie przez okreslona ilosc krokow, to wysyla info
@@ -571,25 +590,17 @@ def go()
       {
         println("ZABLOKOWANY ROBOT " + id)
         // sprawdz czy jestes na chargerze
-        if(checkIfOnCharger())
+        /*if(checkIfOnCharger())
         {
           // jesli tak to wyjdz z while'a i skoncz misje, blokujac chargera
           goToCharger = true
-          
-        }
-        
-        
-      }
-      
+          println(this.id + " ON CHARGER")     
+        }*/
+      }    
     }
   //}
     println("R" + id + " za whilem")
     
-    /*if(steps<20)
-    {
-    // zwolnij T1
-    breakable
-    {*/
     this.synchronized
     {
     for (t <- Map.allTiles)
@@ -602,27 +613,31 @@ def go()
         {
         tileX1 = tileX2
         tileY1 = tileY2
+
         t.free = true
         t.robotId = 0
+
         }
         tileX2 = -1
         tileY2 = -1
         
         
-        //println("Robot " + id + ": " +  "ostatnie T1 = " + tileX1 + " " + tileY1)
+        println("Robot " + id + ": " +  "ostatnie T1 = " + tileX1 + " " + tileY1)
         
       }
     }
     }
-    }
-   // }
+}
+
 def checkIfOnCharger() : Boolean = 
 {
   for(c <- Warehouse.charges)
   {
-    if(x == c.x && y == c.y)
+    if(x == c.x && y == c.y && c.free)
     {
       c.free = false
+      this.xGoal = c.x
+      this.yGoal = c.y
       return true
     }
   }
@@ -648,14 +663,35 @@ def releaseCharger()
   //}
 }
 
+
+def findMaxYOccupiedCharger() : Int = 
+{
+  var max : Int = -1
+  var temp : Int = 0
+    for (c <- Warehouse.charges)
+    {
+      if(!c.free)
+      {
+        temp = c.y
+      
+      if(temp>max)
+      {
+        max = temp
+      }
+      }
+    }
+    return max
+}
+
 def setGoalToCharger()
 {
+  var max = findMaxYOccupiedCharger()
   //this.synchronized
   //{
   breakable
   {
     for(c <- Warehouse.charges)
-      if(c.free)
+      if(c.free && c.y > max)
       {
         xGoal = c.x
         yGoal = c.y
@@ -668,7 +704,8 @@ def setGoalToCharger()
 
   def act() {
     while (true) {
-      receive {
+      receive 
+      {
         case Hello => {
           //status = false
           //println(id + ": " + info + " Status: " + status)
@@ -707,26 +744,53 @@ def setGoalToCharger()
             releaseCharger()
             master ! Busy
             setGoalCords(findItemFromString(startMission))
-            
+            var item = findItemFromString(startMission)
             //println("Robot " + id + ": " + x + " " + y + " T1: " + tileX1 + " " + tileY1 + " T2: " + tileX2 + " " + tileY2)
             go()
-            
-            
+            resetDirections()
             // po dotarciu do celu poczekaj chwile, zmien cel na magazyniera i jedz do niego
             Thread.sleep(1000)
+            item.changeStatus(Status.EnRoute)
+            
             setGoalToMan()
             go()
+            resetDirections()
             // po dojechaniu do magazyniera poczekaj chwile
             Thread.sleep(1000)
             // nastepnie odjedz zeby inne roboty mogly ukonczyc misje i zmien status na 'wolny'
-            
+            item.changeStatus(Status.Delivered)
             // do stacji dok
             setGoalToCharger()
             go()
+            resetDirections()
+            // po dojechaniu do chargera sprawdz czy nie ma czegos do wziecia
+            if(!master.itemsToPick.isEmpty)
+            {
+              var i = master.itemsToPick.head
+              xGoal = i.getShelf().getX()
+              yGoal = i.getShelf().getY()
+              
+              master.itemsToPick.remove(0)
+              releaseCharger()
+              go()
+              resetDirections()
+              Thread.sleep(1000)
+              i.changeStatus(Status.EnRoute)
+              setGoalToMan()
+              go()
+              resetDirections()
+              Thread.sleep(1000)
+              i.changeStatus(Status.Delivered)
+              setGoalToCharger()
+              go()
+              resetDirections()
+            }
+            
+            //else
+            //{
             status = true
             master ! Ready
-            
-
+            //}
           }
       }
     }
